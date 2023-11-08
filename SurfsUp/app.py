@@ -13,6 +13,12 @@ from flask import Flask, jsonify
 # 2. Create an app, being sure to pass __name__
 app = Flask(__name__)
 # 3. Define what to do when a user hits the index route
+
+
+
+# 1 Start at the homepage.
+# List all the available routes.
+
 @app.route("/")
 def hello_world():
     return (
@@ -41,6 +47,12 @@ Base.prepare(autoload_with=engine)
 Measurement=Base.classes.measurement
 Station=Base.classes.station
 
+    ####################################################################
+    ####################################################################
+    ####################################################################    
+# 2 Convert the query results to a dictionary by using date as the key and prcp as the value.
+# Return the JSON representation of your dictionary.
+
 
 @app.route("/api/v1.0/precipitation")
 def date_prcp():
@@ -66,27 +78,50 @@ def date_prcp():
 
 
 
-
-
-
-
     ####################################################################
     ####################################################################
     ####################################################################
-# Return a JSON list of stations from the dataset.
+# 3 Return a JSON list of stations from the dataset.
 @app.route("/api/v1.0/stations")
 def stations():
 # Create our session (link) from Python to the DB
     session = Session(engine)
 
    
-    results = session.query(Station.id, Station.name)\
+    results = session.query(Station.station, Station.name)\
                  .group_by(Station.station).all()
 
 # Create a dictionary from date and prcp retrieved above    
-    station={id:name for id, name in results} 
+    #station={station:name for station, name in results} 
+
+    station = [{"station": station, "name": name} for station, name in results]
+    
+
+    session.close()
 
 
+    ####################################################################
+    ####################################################################
+    ####################################################################
+# 4 Query the dates and temperature observations of the most-active station for the previous year of data.
+# Return a JSON list of temperature observations for the previous year.
+@app.route("/api/v1.0/tobs")
+def date_tobc_most_active():
+# Create our session (link) from Python to the DB
+    session = Session(engine)
+
+   
+    station_activity=session.query(Measurement.station,func.count(Measurement.id)).\
+    group_by(Measurement.station).\
+    order_by(func.count(Measurement.id).desc()).all()
+    results = session.query(Station.station, Station.name)\
+                 .group_by(Station.station).all()
+    most_active_station=station_activity[0][0]
+
+    most_active_data=session.query(Measurement.date, Measurement.tobs).filter_by(Measurement.station==most_active_station)
+
+
+    active_station_data = [{"date": date, "tobs": tobs} for date, tobs in results]
     
 
     session.close()
@@ -94,7 +129,7 @@ def stations():
 
 
 
-    return jsonify(station)
+    return jsonify(active_station_data)
 
 
 
