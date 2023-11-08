@@ -4,11 +4,12 @@ import sqlalchemy
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, func
+from datetime import datetime, timedelta
 
 
 
 # 1. import Flask
-from flask import Flask
+from flask import Flask, jsonify
 # 2. Create an app, being sure to pass __name__
 app = Flask(__name__)
 # 3. Define what to do when a user hits the index route
@@ -40,13 +41,60 @@ Base.prepare(autoload_with=engine)
 Measurement=Base.classes.measurement
 Station=Base.classes.station
 
+
+@app.route("/api/v1.0/precipitation")
+def date_prcp():
 # Create our session (link) from Python to the DB
-session=Session(engine)
+    session = Session(engine)
+
+    recent_date=session.query(Measurement).group_by(Measurement.date).order_by(Measurement.date.desc()).first()
+
+    last_date_string=recent_date.date
+    last_date=datetime.strptime(last_date_string,"%Y-%m-%d").date()
+    one_year_ago=last_date-timedelta(days=365)
+
+
+
+
+    results = session.query(Measurement.date, Measurement.prcp)\
+                 .filter(Measurement.date >= one_year_ago, Measurement.prcp.isnot(None)).all()
+
+# Create a dictionary from date and prcp retrieved above    
+    date_prcp={date:prcp for date, prcp in results} 
+
+    session.close()
 
 
 
 
 
+
+
+    ####################################################################
+    ####################################################################
+    ####################################################################
+# Return a JSON list of stations from the dataset.
+@app.route("/api/v1.0/stations")
+def stations():
+# Create our session (link) from Python to the DB
+    session = Session(engine)
+
+   
+    results = session.query(Station.id, Station.name)\
+                 .group_by(Station.station).all()
+
+# Create a dictionary from date and prcp retrieved above    
+    station={id:name for id, name in results} 
+
+
+    
+
+    session.close()
+
+
+
+
+    return jsonify(station)
 
 
 
