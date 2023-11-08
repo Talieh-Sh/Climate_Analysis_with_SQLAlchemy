@@ -22,7 +22,7 @@ def hello_world():
         f"/api/v1.0/<start> and /api/v1.0/<start> <br/>"
     )
 
-@app.route("/api/v1.0/precipitation")
+#@app.route("/api/v1.0/precipitation")
 #################################################   
 #SQLAlchemy
 
