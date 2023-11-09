@@ -150,12 +150,13 @@ def date_tobc_most_active():
 def data_from_start_date(start):
 # Create our session (link) from Python to the DB
     session = Session(engine)
-   
+    start_string=start
+    start_date= datetime.strptime(start_string,"%Y-%m-%d").date()
     results_data_from_start_date = session.query(
         func.min(Measurement.tobs),
         func.max(Measurement.tobs),
         func.avg(Measurement.tobs)
-        ).filter(Measurement.date >= start).all()
+        ).filter(Measurement.date >= start_date).all()
 
 # Create a dictionary from above results
 
