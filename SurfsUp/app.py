@@ -141,30 +141,76 @@ def date_tobc_most_active():
 # Return a JSON list of the minimum temperature, the average temperature, and the maximum temperature for a specified start or start-end range.
 # For a specified start, calculate TMIN, TAVG, and TMAX for all the dates greater than or equal to the start date.
 
-@app.route("/api/v1.0/<start>")
-def data_from_start_date(start):
-# Create our session (link) from Python to the DB
-    session = Session(engine)
-    start_string=start
-    start_date= datetime.strptime(start_string,"%Y-%m-%d").date()
-    results_data_from_start_date = session.query(
-        func.min(Measurement.tobs),
-        func.max(Measurement.tobs),
-        func.avg(Measurement.tobs)
-        ).filter(Measurement.date >= start_date).all()
+# @app.route("/api/v1.0/<start>")
+# def data_from_start_date(start):
+# # Create our session (link) from Python to the DB
+#     session = Session(engine)
+#     start_date = datetime.strptime(start, "%Y-%m-%d").date()
 
-# Create a dictionary from above results
+#     results_data_from_start_date = session.query(
+#         func.min(Measurement.tobs),
+#         func.max(Measurement.tobs),
+#         func.avg(Measurement.tobs)
+#     ).filter(Measurement.date >= start_date).all()
 
-    dict__data_from_start_date = [{
-        "TMIN": result[0],
-        "TMAX": result[1],
-        "TAVG": result[2]} 
-        for result  in results_data_from_start_date]
+# # Create a dictionary from above results
+
+#     dict_data_from_start_date = [{
+#         "TMIN": result[0],
+#         "TMAX": result[1],
+#         "TAVG": result[2]} 
+#         for result in results_data_from_start_date]
     
 
-    session.close()
+#     session.close()
 
-    return jsonify(dict__data_from_start_date)
+#     return jsonify(dict_data_from_start_date)
+
+
+
+
+
+# @app.route("/api/v1.0/<start>")
+# def data_from_start_date(start):
+#     session = Session(engine)
+    
+#     # Attempt to parse the start date
+#     try:
+#         start_date = datetime.strptime(start, "%Y-%m-%d").date()
+#     except ValueError:
+#         session.close()
+#         return jsonify({"error": "Date format should be YYYY-MM-DD"}), 400
+
+#     results_data_from_start_date = session.query(
+#         func.min(Measurement.tobs),
+#         func.max(Measurement.tobs),
+#         func.avg(Measurement.tobs)
+#     ).filter(Measurement.date >= start_date).all()
+
+#     # Check if results are found
+#     if not results_data_from_start_date:
+#         session.close()
+#         return jsonify({"error": "No data found for the given start date"}), 404
+
+#     # Create a dictionary from above results
+#     dict__data_from_start_date = [{
+#         "TMIN": result[0],
+#         "TMAX": result[1],
+#         "TAVG": result[2]} 
+#         for result in results_data_from_start_date]
+
+#     session.close()
+#     return jsonify(dict__data_from_start_date)
+
+
+
+
+
+
+
+
+
+
 
 
 if __name__ == "__main__":
