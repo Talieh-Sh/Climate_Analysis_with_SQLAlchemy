@@ -88,18 +88,23 @@ def stations():
 # Create our session (link) from Python to the DB
     session = Session(engine)
 
-    # Query for station data
-    results_station = session.query(Station.station, Station.name)\
-                 .group_by(Station.station).all()
+    # Left join Measurement and Station tables to get station names for all measurements
+    stmt = session.query(Measurement.station, Station.name)\
+                 .join(Station, Measurement.station == Station.station, isouter=True)\
+                 .group_by(Measurement.station, Station.name)
 
+    # Execute the query and fetch results
+    results_station = stmt.all()
 
     # Convert query results to a list of dictionaries
     active_station = [{"station": station, "name": name} for station, name in results_station]
-    
 
     session.close()
 
     return jsonify(active_station)
+
+if __name__ == "__main__":
+    app.run(debug=True)
 
     ####################################################################
     ####################################################################
