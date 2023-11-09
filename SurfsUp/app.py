@@ -75,12 +75,7 @@ def date_prcp():
     session.close()
 
     return(jsonify(results_date_prcp_dic))
-# Create a dictionary from date and prcp retrieved above    
-    date_prcp={date:prcp for date, prcp in results} 
 
-    session.close()
-
-    return jsonify(date_prcp)
 
     ####################################################################
     ####################################################################
@@ -146,7 +141,7 @@ def date_tobc_most_active():
 # Return a JSON list of the minimum temperature, the average temperature, and the maximum temperature for a specified start or start-end range.
 # For a specified start, calculate TMIN, TAVG, and TMAX for all the dates greater than or equal to the start date.
 
-@app.route("/api/v1.0/start")
+@app.route("/api/v1.0/<start>")
 def data_from_start_date(start):
 # Create our session (link) from Python to the DB
     session = Session(engine)
