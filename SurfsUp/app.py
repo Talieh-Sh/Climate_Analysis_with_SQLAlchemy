@@ -14,13 +14,13 @@ from flask import Flask, jsonify
 app = Flask(__name__)
 # 3. Define what to do when a user hits the index route
 
-
+########################################### API Static Routes ########################################
 
 # 1 Start at the homepage.
 # List all the available routes.
 
 @app.route("/")
-def hello_world():
+def beginning():
     return (
         f"<h1>Available routes:</h1>"
         f"/api/v1.0/precipitation<br/>"
@@ -68,15 +68,19 @@ def date_prcp():
 
 
 
-    results = session.query(Measurement.date, Measurement.prcp)\
+    results_date_prcp = session.query(Measurement.date, Measurement.prcp)\
                  .filter(Measurement.date >= one_year_ago, Measurement.prcp.isnot(None)).all()
 
+    results_date_prcp_dic=[{date : prcp for date, prcp in results_date_prcp}]
+    session.close()
+
+    return(jsonify(results_date_prcp_dic))
 # Create a dictionary from date and prcp retrieved above    
     date_prcp={date:prcp for date, prcp in results} 
 
     session.close()
 
-
+    return jsonify(date_prcp)
 
     ####################################################################
     ####################################################################
@@ -88,18 +92,18 @@ def stations():
     session = Session(engine)
 
    
-    results = session.query(Station.station, Station.name)\
+    results_station = session.query(Station.station, Station.name)\
                  .group_by(Station.station).all()
 
 # Create a dictionary from date and prcp retrieved above    
     #station={station:name for station, name in results} 
 
-    station = [{"station": station, "name": name} for station, name in results]
+    active_station = [{"station": station, "name": name} for station, name in results_station]
     
 
     session.close()
 
-
+    return jsonify(active_station)
     ####################################################################
     ####################################################################
     ####################################################################
@@ -110,28 +114,61 @@ def date_tobc_most_active():
 # Create our session (link) from Python to the DB
     session = Session(engine)
 
+    recent_date=session.query(Measurement).group_by(Measurement.date).order_by(Measurement.date.desc()).first()
+
+    last_date_string=recent_date.date
+    last_date=datetime.strptime(last_date_string,"%Y-%m-%d").date()
+    one_year_ago=last_date-timedelta(days=365)
+   
+
    
     station_activity=session.query(Measurement.station,func.count(Measurement.id)).\
+    filter(Measurement.date >= one_year_ago).\
     group_by(Measurement.station).\
     order_by(func.count(Measurement.id).desc()).all()
-    results = session.query(Station.station, Station.name)\
-                 .group_by(Station.station).all()
+  
+
     most_active_station=station_activity[0][0]
 
-    most_active_data=session.query(Measurement.date, Measurement.tobs).filter_by(Measurement.station==most_active_station)
+    most_active_data=session.query(Measurement.date, Measurement.tobs).\
+    filter(Measurement.station == most_active_station,Measurement.date >= one_year_ago,Measurement.station==most_active_station)
 
-
-    active_station_data = [{"date": date, "tobs": tobs} for date, tobs in results]
+    active_station_data = [{"date": date, "tobs": tobs} for date, tobs in most_active_data]
     
-
     session.close()
-
-
 
 
     return jsonify(active_station_data)
 
+########################################### API Dynamic Routes ########################################
 
+# 1 /api/v1.0/<start>
+# Return a JSON list of the minimum temperature, the average temperature, and the maximum temperature for a specified start or start-end range.
+# For a specified start, calculate TMIN, TAVG, and TMAX for all the dates greater than or equal to the start date.
+
+@app.route("/api/v1.0/start")
+def data_from_start_date(start):
+# Create our session (link) from Python to the DB
+    session = Session(engine)
+   
+    results_data_from_start_date = session.query(
+        func.min(Measurement.tobs),
+        func.max(Measurement.tobs),
+        func.avg(Measurement.tobs)
+        ).filter(Measurement.date >= start).all()
+
+# Create a dictionary from above results
+
+    dict__data_from_start_date = [{
+        "TMIN": result[0],
+        "TMAX": result[1],
+        "TAVG": result[2]} 
+        for result  in results_data_from_start_date]
+    
+
+    session.close()
+
+    return jsonify(dict__data_from_start_date)
 
 
 if __name__ == "__main__":
