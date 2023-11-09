@@ -26,9 +26,11 @@ def beginning():
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
         f"/api/v1.0/tobs<br/>"
-        f"/api/v1.0/<start><br/>"
-        f"/api/v1.0/<start> <br/>"
+        f"/api/v1.0/&lt;start&gt;<br/>"        # Route for data from a start date
+        f"/api/v1.0/&lt;start&gt;/&lt;end&gt;<br/>"   # Route for data between start and end dates
+        f"Please fill in the &lt;start&gt; and &lt;end&gt; placeholders with dates in the YYYY-MM-DD format."
     )
+
 
 #@app.route("/api/v1.0/precipitation")
 #################################################   
