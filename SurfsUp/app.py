@@ -142,6 +142,7 @@ def date_tobc_most_active():
 # For a specified start, calculate TMIN, TAVG, and TMAX for all the dates greater than or equal to the start date.
 
 @app.route("/api/v1.0/<start>")
+
 def data_from_start_date(start):
 # Create our session (link) from Python to the DB
     session = Session(engine)
@@ -149,8 +150,8 @@ def data_from_start_date(start):
         start_date = datetime.strptime(start, "%Y-%m-%d").date()
     except ValueError:
         session.close()
-        return " Error: Data format shoulpd be YYYY-MM-DD"
-    
+        return f"<h1> Error: Data format should be YYYY-MM-DD , 400 </h1>"
+
     results_data_from_start_date = session.query(
         func.min(Measurement.tobs),
         func.max(Measurement.tobs),
@@ -172,40 +173,40 @@ def data_from_start_date(start):
 
 
 
+######################################
+# 2 /api/v1.0/<start>/<end>
+# For a specified start date and end date, calculate TMIN, TAVG, and TMAX for the dates from the start date to the end date, inclusive.
 
+@app.route("/api/v1.0/<start>/<end>")
 
-# @app.route("/api/v1.0/<start>")
-# def data_from_start_date(start):
-#     session = Session(engine)
+def data_from_start_to_end(start, end):
+# Create our session (link) from Python to the DB
+    session = Session(engine)
+    try:
+        start_date = datetime.strptime(start, "%Y-%m-%d").date()
+        end_date = datetime.strptime(end, "%Y-%m-%d").date()
+    except ValueError:
+        session.close()
+        return f"<h1> Error: Data format should be YYYY-MM-DD , 400 </h1>"
+
+    results_data_from_start_to_end = session.query(
+        func.min(Measurement.tobs),
+        func.max(Measurement.tobs),
+        func.avg(Measurement.tobs)
+    ).filter(Measurement.date >= start_date ,Measurement.date<= end_date ).all()
+
+# Create a dictionary from above results
+
+    dict_data_from_start_to_end = [{
+        "TMIN": result[0],
+        "TMAX": result[1],
+        "TAVG": result[2]} 
+        for result in results_data_from_start_to_end]
     
-#     # Attempt to parse the start date
-#     try:
-#         start_date = datetime.strptime(start, "%Y-%m-%d").date()
-#     except ValueError:
-#         session.close()
-#         return jsonify({"error": "Date format should be YYYY-MM-DD"}), 400
 
-#     results_data_from_start_date = session.query(
-#         func.min(Measurement.tobs),
-#         func.max(Measurement.tobs),
-#         func.avg(Measurement.tobs)
-#     ).filter(Measurement.date >= start_date).all()
+    session.close()
 
-#     # Check if results are found
-#     if not results_data_from_start_date:
-#         session.close()
-#         return jsonify({"error": "No data found for the given start date"}), 404
-
-#     # Create a dictionary from above results
-#     dict__data_from_start_date = [{
-#         "TMIN": result[0],
-#         "TMAX": result[1],
-#         "TAVG": result[2]} 
-#         for result in results_data_from_start_date]
-
-#     session.close()
-#     return jsonify(dict__data_from_start_date)
-
+    return jsonify(dict_data_from_start_to_end)
 
 
 
