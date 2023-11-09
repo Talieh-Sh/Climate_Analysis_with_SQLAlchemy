@@ -26,7 +26,8 @@ def beginning():
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
         f"/api/v1.0/tobs<br/>"
-        f"/api/v1.0/<start> and /api/v1.0/<start> <br/>"
+        f"/api/v1.0/<start><br/>"
+        f"/api/v1.0/<start> <br/>"
     )
 
 #@app.route("/api/v1.0/precipitation")
